@@ -6,6 +6,5 @@ add_toy_library(ToyTransforms
 
   LINK_LIBS PUBLIC
   MLIRIR
-  MLIRLLVMDialect
   MLIRAffineDialect
 )

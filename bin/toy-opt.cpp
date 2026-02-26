@@ -4,10 +4,11 @@
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 
 #include "Transforms/Passes.h"
+#include "Dialect/ToyDialect.h"
 
 void registerToyDialects(mlir::DialectRegistry &registry) {
     registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
-                    mlir::affine::AffineDialect
+                    mlir::affine::AffineDialect, mlir::toy::ToyDialect
                     >();
 }
 
