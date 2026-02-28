@@ -2,6 +2,7 @@
 #include "mlir/Dialect/Arith/IR/Arith.h"
 #include "mlir/Dialect/Func/IR/FuncOps.h"
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
+#include "mlir/InitAllPasses.h"
 
 #include "Transforms/Passes.h"
 #include "Dialect/ToyDialect.h"
@@ -16,6 +17,7 @@ int main(int argc, char **argv) {
     mlir::DialectRegistry registry;
     registerToyDialects(registry);
 
+    mlir::registerAllPasses();
     mlir::toy::registerToyPasses();
 
     return mlir::asMainReturnCode(
