@@ -17,7 +17,11 @@ def Toy_Ptr : Toy_Type<"Ptr", "ptr"> {
     let parameters = (ins "Type":$elemType);
     let assemblyFormat = "`<` $elemType `>`";
 }
+def Toy_PtrTensor : RankedTensorOf<[Toy_Ptr]>;
+def Toy_PtrLike : AnyTypeOf<[Toy_Ptr, Toy_PtrTensor]>;
 
 def Toy_Int : AnyTypeOf<[I1, I8, I16, I32, I64], "Integer">;
+def Toy_IntTensor : RankedTensorOf<[Toy_Int]>;
+def Toy_IntLike : AnyTypeOf<[Toy_Int, Toy_IntTensor]>;
 
 #endif
