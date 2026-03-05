@@ -21,6 +21,8 @@ def Toy_PtrTensor : RankedTensorOf<[Toy_Ptr]>;
 def Toy_PtrLike : AnyTypeOf<[Toy_Ptr, Toy_PtrTensor]>;
 
 def Toy_Int : AnyTypeOf<[I1, I8, I16, I32, I64], "Integer">;
+def Toy_Float : AnyTypeOf<[F16, F32, F64], "Float">;
+def Toy_IntOrFloat : AnyTypeOf<[Toy_Int, Toy_Float]>;
 def Toy_IntTensor : RankedTensorOf<[Toy_Int]>;
 def Toy_IntLike : AnyTypeOf<[Toy_Int, Toy_IntTensor]>;
 

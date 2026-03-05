@@ -3,6 +3,7 @@
 #include "llvm/ADT/TypeSwitch.h"
 #include "mlir/IR/Builders.h"
 #include "llvm/Support/Debug.h"
+#include "mlir/IR/BuiltinTypeInterfaces.h"
 
 #define GET_TYPEDEF_CLASSES
 #include "Dialect/ToyTypes.cpp.inc"
@@ -39,15 +40,25 @@ void ToyDialect::initialize() {
 
 ::mlir::OpFoldResult AddPtrOp::fold(FoldAdaptor adaptor) {
     auto ptr = dyn_cast_or_null<DenseI64ArrayAttr>(adaptor.getPtr());
-    auto offset = dyn_cast_or_null<IntegerAttr>(adaptor.getOffset());
-    if (!ptr || !offset)
+    if (!ptr)
         return {};
 
-    int64_t off = offset.getValue().getSExtValue();
     SmallVector<int64_t> res;
     res.reserve(ptr.size());
-    for (int64_t p: ptr.asArrayRef())
-        res.push_back(p + off);
+
+    if (auto attr = dyn_cast_or_null<IntegerAttr>(adaptor.getOffset())) {
+        auto off = attr.getValue().getSExtValue();
+        for (auto o : ptr.asArrayRef())
+            res.push_back(o + off);
+    } else if (auto attr = dyn_cast_or_null<DenseElementsAttr>(adaptor.getOffset())) {
+        if (!attr.getType().hasStaticShape() || attr.getNumElements() != ptr.size())
+            return {};
+
+        auto pa = ptr.asArrayRef();
+        auto oa = attr.getValues<APInt>();
+        for (auto it: llvm::zip(pa, oa))
+            res.push_back(std::get<0>(it) + std::get<1>(it).getSExtValue());
+    }
 
     return DenseI64ArrayAttr::get(getContext(), res);
 }
@@ -60,6 +71,16 @@ void ToyDialect::initialize() {
     if (!coeff)
         return nullptr;
     return builder.create<ConstantOp>(loc, type, coeff);
+}
+
+::mlir::OpFoldResult SplatOp::fold(FoldAdaptor adaptor) {
+    auto value = adaptor.getInput();
+    if (!value || !isa<FloatAttr, IntegerAttr>(value))
+        return {};
+    auto type = dyn_cast_or_null<ShapedType>(getType());
+    if (!type)
+        return {};
+    return SplatElementsAttr::get(type, ArrayRef<Attribute>(value));
 }
 
 }
