@@ -9,7 +9,10 @@ include "mlir/Bytecode/BytecodeOpInterface.td"
 
 class Toy_Op<string mnemonic, list<Trait> traits = []> : Op<Toy_Dialect, mnemonic, traits> {}
 
-def Toy_AddPtrOp : Toy_Op<"addptr", [Pure, ElementwiseMappable]> {
+def Toy_AddPtrOp : Toy_Op<"addptr", [Pure, ElementwiseMappable,
+                                     SameOperandsAndResultShape,
+                                     TypesMatchWith<"Result type match with ptr type",
+                                                    "res", "ptr", "$_self">]> {
     let summary = "Add pointer addresss with an offset";
     let description = [{
         Add pointer addresss with an offset.
@@ -18,7 +21,7 @@ def Toy_AddPtrOp : Toy_Op<"addptr", [Pure, ElementwiseMappable]> {
     let arguments = (ins Toy_PtrLike:$ptr, Toy_IntLike:$offset);
     let results = (outs Toy_PtrLike:$res);
 
-    let assemblyFormat = "$ptr `,` $offset attr-dict `:` type($ptr) `,` type($offset) `->` type($res)";
+    let assemblyFormat = "$ptr `,` $offset attr-dict `:` type($res) `,` type($offset)";
     let hasFolder = 1;
 }
 
@@ -41,6 +44,17 @@ def Toy_ConstantOp : Toy_Op<"constant", [Pure, ConstantLike]> {
     let arguments = (ins DenseI64ArrayAttr:$coeff);
     let results = (outs Toy_PtrTensor:$output);
     let assemblyFormat = "$coeff attr-dict `:` qualified(type($output))";
+    let hasFolder = 1;
+}
+
+def Toy_SplatOp : Toy_Op<"splat", [Pure, SameOperandsAndResultElementType]> {
+    let summary = "Splat offset(int) to tensor of offset";
+    let description = [{
+        Splat offset(int) to tensor of offset
+    }];
+    let arguments = (ins Toy_IntLike:$input);
+    let results = (outs Toy_IntTensor:$output);
+    let assemblyFormat = "$input attr-dict `:` type($input) `->` type($output)";
     let hasFolder = 1;
 }
 
