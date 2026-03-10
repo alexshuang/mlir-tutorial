@@ -4,12 +4,15 @@
 #include "mlir/IR/Builders.h"
 #include "llvm/Support/Debug.h"
 #include "mlir/IR/BuiltinTypeInterfaces.h"
+#include "mlir/IR/PatternMatch.h"
 
 #define GET_TYPEDEF_CLASSES
 #include "Dialect/ToyTypes.cpp.inc"
 
 #define GET_OP_CLASSES
 #include "Dialect/ToyOps.cpp.inc"
+
+#include "Dialect/ToyCanonicalize.cpp.inc"
 
 namespace mlir {
 namespace toy {
@@ -81,6 +84,11 @@ void ToyDialect::initialize() {
     if (!type)
         return {};
     return SplatElementsAttr::get(type, ArrayRef<Attribute>(value));
+}
+
+void BroadcastOp::getCanonicalizationPatterns(::mlir::RewritePatternSet &results,
+                                              ::mlir::MLIRContext *context) {
+    results.add<BroadcastSplatPattern, BroadcastBroadcastPattern>(context);
 }
 
 }
