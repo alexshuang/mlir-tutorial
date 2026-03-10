@@ -1,8 +1,8 @@
 #ifndef TOY_OPS
 #define TOY_OPS
 
-include "ToyDialect.td"
-include "ToyTypes.td"
+include "Dialect/ToyDialect.td"
+include "Dialect/ToyTypes.td"
 include "mlir/IR/OpBase.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/Bytecode/BytecodeOpInterface.td"
@@ -52,10 +52,23 @@ def Toy_SplatOp : Toy_Op<"splat", [Pure, SameOperandsAndResultElementType]> {
     let description = [{
         Splat offset(int) to tensor of offset
     }];
-    let arguments = (ins Toy_IntLike:$input);
-    let results = (outs Toy_IntTensor:$output);
+    let arguments = (ins Toy_Type:$input);
+    let results = (outs Toy_Tensor:$output);
     let assemblyFormat = "$input attr-dict `:` type($input) `->` type($output)";
     let hasFolder = 1;
+}
+
+def Toy_BroadcastOp : Toy_Op<"broadcast", [Pure,
+                                           SameOperandsAndResultElementType]> {
+    let summary = "Broadcast a tensor";
+    let description = [{
+        Broadcast one or more dims with size 1 to a new size,
+        e.g. tensor<1x3xf32> -> tensor<3x3xf32>.
+    }];
+    let arguments = (ins Toy_Tensor:$src);
+    let results = (outs Toy_Tensor:$out);
+    let assemblyFormat = "$src attr-dict `:` type($src) `->` type($out)";
+    let hasCanonicalizer = 1;
 }
 
 #endif
