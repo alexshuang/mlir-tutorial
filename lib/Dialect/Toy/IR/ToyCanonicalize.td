@@ -1,7 +1,7 @@
 #ifndef TOY_CANONICALIZE
 #define TOY_CANONICALIZE
 
-include "Dialect/ToyOps.td"
+include "Dialect/Toy/IR/ToyOps.td"
 include "mlir/IR/PatternBase.td"
 
 def BroadcastSplatPattern : Pat<

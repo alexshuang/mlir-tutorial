@@ -1,5 +1,5 @@
-#include "Dialect/ToyDialect.h"
-#include "Dialect/ToyDialect.cpp.inc"
+#include "Dialect/Toy/IR/Dialect.h"
+#include "Dialect/Toy/IR/ToyDialect.cpp.inc"
 #include "llvm/ADT/TypeSwitch.h"
 #include "mlir/IR/Builders.h"
 #include "llvm/Support/Debug.h"
@@ -7,12 +7,12 @@
 #include "mlir/IR/PatternMatch.h"
 
 #define GET_TYPEDEF_CLASSES
-#include "Dialect/ToyTypes.cpp.inc"
+#include "Dialect/Toy/IR/ToyTypes.cpp.inc"
 
 #define GET_OP_CLASSES
-#include "Dialect/ToyOps.cpp.inc"
+#include "Dialect/Toy/IR/ToyOps.cpp.inc"
 
-#include "Dialect/ToyCanonicalize.cpp.inc"
+#include "Dialect/Toy/IR/ToyCanonicalize.cpp.inc"
 
 namespace mlir {
 namespace toy {
@@ -21,12 +21,12 @@ void ToyDialect::initialize() {
     // Used to register types and operations with the dialect
     addTypes<
 #define GET_TYPEDEF_LIST
-#include "Dialect/ToyTypes.cpp.inc"
+#include "Dialect/Toy/IR/ToyTypes.cpp.inc"
     >();
 
     addOperations<
 #define GET_OP_LIST
-#include "Dialect/ToyOps.cpp.inc"
+#include "Dialect/Toy/IR/ToyOps.cpp.inc"
     >();
 }
 

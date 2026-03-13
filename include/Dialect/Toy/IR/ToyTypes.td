@@ -1,7 +1,7 @@
 #ifndef TOY_TYPES
 #define TOY_TYPES
 
-include "Dialect/ToyDialect.td"
+include "Dialect/Toy/IR/ToyDialect.td"
 include "mlir/IR/AttrTypeBase.td"
 
 class Toy_Type<string name, string typeMnemonic> : TypeDef<Toy_Dialect, name> {

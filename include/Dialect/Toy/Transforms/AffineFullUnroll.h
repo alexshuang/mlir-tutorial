@@ -7,7 +7,7 @@ namespace mlir {
 namespace toy {
 
 #define GEN_PASS_DECL_AFFINEFULLUNROLL
-#include "Transforms/Passes.h.inc"
+#include "Dialect/Toy/Transforms/Passes.h.inc"
 
 }
 }

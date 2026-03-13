@@ -6,12 +6,12 @@
 #include "mlir/Interfaces/SideEffectInterfaces.h"
 #include "mlir/Bytecode/BytecodeOpInterface.h"
 
-#include "Dialect/ToyDialect.h.inc"
+#include "Dialect/Toy/IR/ToyDialect.h.inc"
 
 #define GET_TYPEDEF_CLASSES
-#include "Dialect/ToyTypes.h.inc"
+#include "Dialect/Toy/IR/ToyTypes.h.inc"
 
 #define GET_OP_CLASSES
-#include "Dialect/ToyOps.h.inc"
+#include "Dialect/Toy/IR/ToyOps.h.inc"
 
 #endif
