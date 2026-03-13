@@ -4,8 +4,8 @@
 #include "mlir/Dialect/Affine/IR/AffineOps.h"
 #include "mlir/InitAllPasses.h"
 
-#include "Transforms/Passes.h"
-#include "Dialect/ToyDialect.h"
+#include "Dialect/Toy/Transforms/Passes.h"
+#include "Dialect/Toy/IR/Dialect.h"
 
 void registerToyDialects(mlir::DialectRegistry &registry) {
     registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
     registerToyDialects(registry);
 
     mlir::registerAllPasses();
-    mlir::toy::registerToyPasses();
+    mlir::toy::registerToyTransformPasses();
 
     return mlir::asMainReturnCode(
         mlir::MlirOptMain(argc, argv, "Tutorial pass driver", registry)

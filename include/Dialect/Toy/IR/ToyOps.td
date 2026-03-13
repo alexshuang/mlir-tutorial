@@ -1,8 +1,8 @@
 #ifndef TOY_OPS
 #define TOY_OPS
 
-include "Dialect/ToyDialect.td"
-include "Dialect/ToyTypes.td"
+include "Dialect/Toy/IR/ToyDialect.td"
+include "Dialect/Toy/IR/ToyTypes.td"
 include "mlir/IR/OpBase.td"
 include "mlir/Interfaces/SideEffectInterfaces.td"
 include "mlir/Bytecode/BytecodeOpInterface.td"
