@@ -6,6 +6,7 @@
 
 #include "Dialect/Toy/Transforms/Passes.h"
 #include "Dialect/Toy/IR/Dialect.h"
+#include "Conversion/ToyToToyCPU/Passes.h"
 
 void registerToyDialects(mlir::DialectRegistry &registry) {
     registry.insert<mlir::arith::ArithDialect, mlir::func::FuncDialect,
@@ -19,6 +20,7 @@ int main(int argc, char **argv) {
 
     mlir::registerAllPasses();
     mlir::toy::registerToyTransformPasses();
+    mlir::toy::registerToyConversionPasses();
 
     return mlir::asMainReturnCode(
         mlir::MlirOptMain(argc, argv, "Tutorial pass driver", registry)
