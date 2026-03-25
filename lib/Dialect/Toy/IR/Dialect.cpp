@@ -35,10 +35,27 @@ void ToyDialect::initialize() {
 }
 
 ::mlir::OpFoldResult FromTensorOp::fold(FoldAdaptor adaptor) {
-    auto input = dyn_cast_or_null<DenseI64ArrayAttr>(adaptor.getInput());
-    if (!input)
+    auto in = adaptor.getInput();
+    if (auto dense = dyn_cast<DenseElementsAttr>(in))
+        return dense;
+    else if (auto iAttr = dyn_cast<IntegerAttr>(in))
+        return iAttr;
+    else if (auto fAttr = dyn_cast<FloatAttr>(in))
+        return fAttr;
+    else
         return {};
-    return input;
+}
+
+::mlir::OpFoldResult ToTensorOp::fold(FoldAdaptor adaptor) {
+    auto in = adaptor.getInput();
+    if (auto arr = dyn_cast<ArrayAttr>(in))
+        return arr;
+    else if (auto iAttr = dyn_cast<IntegerAttr>(in))
+        return iAttr;
+    else if (auto fAttr = dyn_cast<FloatAttr>(in))
+        return fAttr;
+    else
+        return {};
 }
 
 ::mlir::OpFoldResult AddPtrOp::fold(FoldAdaptor adaptor) {

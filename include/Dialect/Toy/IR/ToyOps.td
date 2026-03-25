@@ -30,8 +30,19 @@ def Toy_FromTensorOp : Toy_Op<"from_tensor", [Pure]> {
     let description = [{
         Create ptrTensor from tensor
     }];
-    let arguments = (ins TensorOf<[AnyInteger]>:$input);
-    let results = (outs TensorOf<[Toy_Ptr]>:$output);
+    let arguments = (ins AnyTypeOf<[Toy_FloatLike, Toy_IntLike]>:$input);
+    let results = (outs Toy_PtrLike:$output);
+    let assemblyFormat = "$input attr-dict `:` type($input) `->` type($output)";
+    let hasFolder = 1;
+}
+
+def Toy_ToTensorOp : Toy_Op<"to_tensor", [Pure]> {
+    let summary = "Create tensor from ptrTensor";
+    let description = [{
+        Create tensor from ptrTensor
+    }];
+    let arguments = (ins Toy_PtrLike:$input);
+    let results = (outs AnyTypeOf<[Toy_FloatLike, Toy_IntLike]>:$output);
     let assemblyFormat = "$input attr-dict `:` type($input) `->` type($output)";
     let hasFolder = 1;
 }
