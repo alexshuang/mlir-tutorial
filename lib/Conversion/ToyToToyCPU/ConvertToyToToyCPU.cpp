@@ -42,6 +42,46 @@ struct ConvertAddPtr : public OpConversionPattern<AddPtrOp> {
     }
 };
 
+struct ConvertConstant : public OpConversionPattern<ConstantOp> {
+    using OpConversionPattern<ConstantOp>::OpConversionPattern;
+
+    LogicalResult matchAndRewrite(ConstantOp op, OpAdaptor adaptor,
+                                  ConversionPatternRewriter &rewriter) const override {
+        auto loc = op.getLoc();
+        auto arr = adaptor.getValue();
+        auto first_elemTy = cast<TypedAttr>(arr[0]).getType();
+        auto elemTy = cast<PtrType>(op.getType().getElementType()).getElemType();
+        auto resTy = RankedTensorType::get({static_cast<int64_t>(arr.size())},
+                                           elemTy);
+
+        SmallVector<Attribute> elems;
+        elems.reserve(arr.size());
+        if (first_elemTy.isIntOrIndex()) {
+            for (auto &o : arr) {
+                auto attr = cast<IntegerAttr>(o);
+                auto v = attr.getValue().sextOrTrunc(
+                            elemTy.getIntOrFloatBitWidth());
+                elems.push_back(IntegerAttr::get(elemTy, v));
+            }
+        } else {
+            assert(isa<FloatType>(first_elemTy));
+            auto &sem = cast<FloatType>(elemTy).getFloatSemantics();
+            bool losesInfo = false;
+            for (auto &o : arr) {
+                APFloat v = cast<FloatAttr>(o).getValue();
+                v.convert(sem, APFloat::rmNearestTiesToEven, &losesInfo);
+                elems.push_back(FloatAttr::get(elemTy, v));
+            }
+        }
+
+        auto denseAttr = DenseElementsAttr::get(resTy, elems);
+
+        auto res = rewriter.create<arith::ConstantOp>(loc, resTy, denseAttr);
+        rewriter.replaceOp(op, res.getResult());
+        return success();
+    }
+};
+
 struct ConvertToyToToyCPU : impl::ConvertToyToToyCPUBase<ConvertToyToToyCPU> {
     using ConvertToyToToyCPUBase::ConvertToyToToyCPUBase;
 
@@ -56,6 +96,7 @@ struct ConvertToyToToyCPU : impl::ConvertToyToToyCPUBase<ConvertToyToToyCPU> {
         RewritePatternSet patterns(ctx);
         ConvertToyToToyCPUTypeConverter typeConverter(ctx);
         patterns.add<ConvertAddPtr>(typeConverter, ctx);
+        patterns.add<ConvertConstant>(typeConverter, ctx);
 
         populateFunctionOpInterfaceTypeConversionPattern<func::FuncOp>(patterns, typeConverter);
         target.addDynamicallyLegalOp<func::FuncOp>([&](func::FuncOp op) {

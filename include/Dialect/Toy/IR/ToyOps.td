@@ -41,9 +41,9 @@ def Toy_ConstantOp : Toy_Op<"constant", [Pure, ConstantLike]> {
     let description = [{
         The creator of toy tensor/vector/scalar
     }];
-    let arguments = (ins Toy_ArrayAttr:$coeff);
+    let arguments = (ins Toy_ArrayAttr:$value);
     let results = (outs Toy_PtrTensor:$output);
-    let assemblyFormat = "$coeff attr-dict `:` qualified(type($output))";
+    let assemblyFormat = "$value attr-dict `:` qualified(type($output))";
     let hasFolder = 1;
 }
 

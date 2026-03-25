@@ -31,7 +31,7 @@ void ToyDialect::initialize() {
 }
 
 ::mlir::OpFoldResult ConstantOp::fold(FoldAdaptor adaptor) {
-    return adaptor.getCoeffAttr();
+    return adaptor.getValueAttr();
 }
 
 ::mlir::OpFoldResult FromTensorOp::fold(FoldAdaptor adaptor) {
@@ -105,10 +105,10 @@ void ToyDialect::initialize() {
                                                    ::mlir::Attribute value,
                                                    ::mlir::Type type,
                                                    ::mlir::Location loc) {
-    auto coeff = dyn_cast<ArrayAttr>(value);
-    if (!coeff)
+    auto val = dyn_cast<ArrayAttr>(value);
+    if (!val)
         return nullptr;
-    return builder.create<ConstantOp>(loc, type, coeff);
+    return builder.create<ConstantOp>(loc, type, val);
 }
 
 ::mlir::OpFoldResult SplatOp::fold(FoldAdaptor adaptor) {
