@@ -26,6 +26,15 @@ public:
             }
             return tensorTy;
         });
+
+        addSourceMaterialization([](OpBuilder &builder, Type type,
+                                    ValueRange inputs, Location loc) {
+            return builder.create<FromTensorOp>(loc, type, inputs[0]);
+        });
+        addTargetMaterialization([](OpBuilder &builder, Type type,
+                                    ValueRange inputs, Location loc) {
+            return builder.create<ToTensorOp>(loc, type, inputs[0]);
+        });
     }
 };
 
@@ -90,7 +99,7 @@ struct ConvertToyToToyCPU : impl::ConvertToyToToyCPUBase<ConvertToyToToyCPU> {
         auto *module = getOperation();
 
         ConversionTarget target(*ctx);
-        target.addIllegalDialect<ToyDialect>();
+        target.addIllegalOp<AddPtrOp, ConstantOp>();
         target.addLegalDialect<ArithDialect>();
 
         RewritePatternSet patterns(ctx);
@@ -98,16 +107,16 @@ struct ConvertToyToToyCPU : impl::ConvertToyToToyCPUBase<ConvertToyToToyCPU> {
         patterns.add<ConvertAddPtr>(typeConverter, ctx);
         patterns.add<ConvertConstant>(typeConverter, ctx);
 
-        populateFunctionOpInterfaceTypeConversionPattern<func::FuncOp>(patterns, typeConverter);
-        target.addDynamicallyLegalOp<func::FuncOp>([&](func::FuncOp op) {
-            return typeConverter.isSignatureLegal(op.getFunctionType()) &&
-                   typeConverter.isLegal(&op.getBody());
-        });
+        // populateFunctionOpInterfaceTypeConversionPattern<func::FuncOp>(patterns, typeConverter);
+        // target.addDynamicallyLegalOp<func::FuncOp>([&](func::FuncOp op) {
+        //     return typeConverter.isSignatureLegal(op.getFunctionType()) &&
+        //            typeConverter.isLegal(&op.getBody());
+        // });
 
-        populateReturnOpTypeConversionPattern(patterns, typeConverter);
-        target.addDynamicallyLegalOp<func::ReturnOp>([&](func::ReturnOp op) {
-            return typeConverter.isLegal(op);
-        });
+        // populateReturnOpTypeConversionPattern(patterns, typeConverter);
+        // target.addDynamicallyLegalOp<func::ReturnOp>([&](func::ReturnOp op) {
+        //     return typeConverter.isLegal(op);
+        // });
 
         if (failed(applyPartialConversion(module, target,
                                           std::move(patterns)))) {
