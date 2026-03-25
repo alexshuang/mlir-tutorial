@@ -42,35 +42,70 @@ void ToyDialect::initialize() {
 }
 
 ::mlir::OpFoldResult AddPtrOp::fold(FoldAdaptor adaptor) {
-    auto ptr = dyn_cast_or_null<DenseI64ArrayAttr>(adaptor.getPtr());
-    if (!ptr)
+    auto ptrArr = dyn_cast_or_null<ArrayAttr>(adaptor.getPtr());
+    if (!ptrArr)
         return {};
 
-    SmallVector<int64_t> res;
-    res.reserve(ptr.size());
+    SmallVector<Attribute> res;
+    res.reserve(ptrArr.size());
 
     if (auto attr = dyn_cast_or_null<IntegerAttr>(adaptor.getOffset())) {
         auto off = attr.getValue().getSExtValue();
-        for (auto o : ptr.asArrayRef())
-            res.push_back(o + off);
+        for (auto o : ptrArr) {
+            auto iAttr = dyn_cast_or_null<IntegerAttr>(o);
+            if (!iAttr)
+                return {};
+
+            auto ty = iAttr.getType();
+            auto a = iAttr.getValue().getSExtValue();
+            res.push_back(IntegerAttr::get(ty, a + off));
+        }
     } else if (auto attr = dyn_cast_or_null<DenseElementsAttr>(adaptor.getOffset())) {
-        if (!attr.getType().hasStaticShape() || attr.getNumElements() != ptr.size())
+        if (!attr.getType().hasStaticShape() || attr.getNumElements() != ptrArr.size())
             return {};
 
-        auto pa = ptr.asArrayRef();
-        auto oa = attr.getValues<APInt>();
-        for (auto it: llvm::zip(pa, oa))
-            res.push_back(std::get<0>(it) + std::get<1>(it).getSExtValue());
+        if (attr.getElementType().isIntOrIndex()) {
+            auto val = attr.getValues<APInt>();
+            auto it = val.begin();
+            for (auto &o : ptrArr) {
+                auto iAttr = dyn_cast_or_null<IntegerAttr>(o);
+                if (!iAttr)
+                    return {};
+
+                auto ty = iAttr.getType();
+                auto a = iAttr.getValue().getSExtValue();
+                auto b = (*it).getSExtValue();
+                res.push_back(IntegerAttr::get(ty, a + b));
+                it++;
+            }
+        } else if (attr.getElementType().isF32() || attr.getElementType().isF64()) {
+            auto val = attr.getValues<APFloat>();
+            auto it = val.begin();
+            for (auto &o : ptrArr) {
+                auto fAttr = dyn_cast_or_null<FloatAttr>(o);
+                if (!fAttr)
+                    return {};
+
+                auto ty = fAttr.getType();
+                auto sum = fAttr.getValue();
+                auto b = *it++;
+                sum.add(b, APFloat::rmNearestTiesToEven);
+
+                res.push_back(FloatAttr::get(ty, sum));
+            }
+        } else {
+            return {};
+        }
     }
 
-    return DenseI64ArrayAttr::get(getContext(), res);
+    return ArrayAttr::get(getContext(), res);
 }
 
 ::mlir::Operation *ToyDialect::materializeConstant(::mlir::OpBuilder &builder,
                                                    ::mlir::Attribute value,
                                                    ::mlir::Type type,
                                                    ::mlir::Location loc) {
-    auto coeff = dyn_cast<DenseI64ArrayAttr>(value);
+    auto coeff = dyn_cast<ArrayAttr>(value);
     if (!coeff)
         return nullptr;
     return builder.create<ConstantOp>(loc, type, coeff);

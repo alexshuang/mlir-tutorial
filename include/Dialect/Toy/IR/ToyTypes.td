@@ -33,4 +33,9 @@ def Toy_IntOrFloat : AnyTypeOf<[Toy_Int, Toy_Float]>;
 def Toy_Tensor : AnyTypeOf<[Toy_PtrTensor, Toy_IntTensor, Toy_FloatTensor]>;
 def Toy_Type : AnyTypeOf<[Toy_PtrLike, Toy_FloatLike, Toy_IntLike]>;
 
+def Toy_Attr : AnyAttrOf<[I64Attr, I32Attr, I8Attr, BoolAttr, F64Attr,
+                          F32Attr]>;
+
+def Toy_ArrayAttr : TypedArrayAttrBase<Toy_Attr, "array of toy attributes">;
+
 #endif
